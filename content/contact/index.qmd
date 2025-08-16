@@ -1,0 +1,5 @@
+---
+title: "Contact"
+---
+
+You can contact us at `beepboopstats@gmail.com`.

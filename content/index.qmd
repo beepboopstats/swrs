@@ -1,0 +1,11 @@
+---
+title: "Tools for SWRS Field Work"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+dttm <- Sys.Date()
+```
+
+More info soon.

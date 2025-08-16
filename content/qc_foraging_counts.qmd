@@ -1,0 +1,170 @@
+---
+title: ""
+format: 
+  html: 
+    number-sections: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = F)
+knitr::opts_chunk$set(message = F)
+
+set.seed(420)
+rm(list = ls())
+
+## For more inspiration on customizing the html output, refer to the following:
+# https://bookdown.org/yihui/rmarkdown/html-document.html#table-of-contents
+
+```
+
+
+<!-- Housekeeping -->
+
+```{r housekeeping, include=FALSE}
+
+# Load the libraries
+library(dplyr)
+googlesheets4::gs4_deauth()
+
+# set path to the behavioral data within your repository 
+link = "https://docs.google.com/spreadsheets/d/167rT3pKlFvfqzlXSNDd31ad4pZSzWwvz4mtAnq2I0z8/edit?gid=0#gid=0"
+
+```
+
+<!-- # Read data from googledrive -->
+
+```{r get_data}
+dat <- googlesheets4::read_sheet(
+  link,
+  sheet = 1,
+  skip = 1,
+  col_types = "c"
+) |> 
+  janitor::clean_names()
+```
+
+<!-- Check if formatting of googlesheet is okay. -->
+
+<!-- # Tidy data -->
+
+```{r tidy_data}
+tdat <- dat |> 
+  select(
+    date,
+    observer = observer_initial,
+    col_id,
+    # time = foraging_time,
+    matches("^in"),
+    matches("^out")
+  ) |> 
+  mutate(
+    date = lubridate::mdy(date),
+    # time = lubridate::parse_date_time(time, "H:M:S p") |> 
+    #   hms::as_hms(),
+    across(
+      matches("^in|^out"),
+      ~ as.integer(.x)
+    )
+  )
+```
+
+<!-- # Summarize  -->
+
+```{r}
+sdat <- tdat |> 
+  group_by(date, observer, col_id) |> 
+  tidyr::pivot_longer(
+    cols = matches("^in|^out"),
+    names_to = "inout",
+    values_to = "rate"
+  ) |> 
+  ungroup() |> 
+  mutate(
+    inout = if_else(stringr::str_detect(inout, "^in"), "in", "out")
+  ) |> 
+  group_by(
+    date, observer, col_id, inout
+  ) |> 
+  reframe(
+    rate = sum(rate, na.rm = TRUE)
+  ) |> 
+  arrange(
+    date, observer, col_id
+  )
+```
+
+# Outstanding errors
+
+## Error: Dates
+
+The date of observation entered is an implausible date.
+
+```{r}
+foo <- sdat |> 
+  filter(
+    date > Sys.Date() 
+  ) |> 
+  select(
+    date,
+    observer,
+    col_id
+  )
+
+if(nrow(foo) > 0) {
+  foo |> 
+    reactable::reactable(
+      groupBy = c("observer"),
+      columns = list(
+        date = reactable::colDef(minWidth = 150, name = "date (ymd)")
+      )
+    )
+} else {
+  cat("None found! Good job people.")
+}
+```
+
+## Error: Colony IDs
+
+Below, we list two types of colonies:
+
+1. __expected__ to count, but __missed__
+2. __NOT expected__ to count, but __counted__
+
+::: {.callout-note collapse=true}
+## Expected, but missed
+
+> COMING SOON.
+
+:::
+
+::: {.callout-warning collapse=true}
+## NOT expected, but counted
+
+> COMING SOON.
+
+:::
+
+# View summarized dataset
+
+> Grouped by date and observer, total in/out rates.
+
+```{r}
+sdat |> 
+  tidyr::pivot_wider(
+    names_from = inout,
+    values_from = rate,
+  ) |> 
+  reactable::reactable(
+    groupBy = c("date", "observer"),
+    sortable = TRUE,
+    filterable = TRUE,
+    resizable = TRUE,
+    height = 500,
+    columns = list(
+      date = reactable::colDef(minWidth = 150, name = "date (ymd)")
+    )
+  )
+```
+
