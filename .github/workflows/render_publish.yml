@@ -1,0 +1,16 @@
+on:
+  workflow_dispatch:
+  push:
+    branches: main
+  schedule:
+  # every 4th hour, starting at 5 hrs UTC (10 pm PT)
+    - cron: '0 5/4 * * *'
+
+name: Quarto Render and Publish
+
+jobs:
+  render_publish:
+    uses: biplabendu/gha-workflows/.github/workflows/render-publish-ghpages.yml@main
+    secrets: inherit
+    with:
+      publish_path: './content'
