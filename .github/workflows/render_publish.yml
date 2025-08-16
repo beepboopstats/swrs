@@ -4,7 +4,7 @@ on:
     branches: main
   schedule:
   # every 4th hour, starting at 5 hrs UTC (10 pm PT)
-    - cron: '0 5/4 * * *'
+    - cron: '0 21/4 * * *'
 
 name: Quarto Render and Publish
 
