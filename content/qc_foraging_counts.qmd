@@ -10,10 +10,6 @@ format:
 knitr::opts_chunk$set(echo = FALSE)
 knitr::opts_chunk$set(warning = F)
 knitr::opts_chunk$set(message = F)
-
-set.seed(420)
-rm(list = ls())
-
 ## For more inspiration on customizing the html output, refer to the following:
 # https://bookdown.org/yihui/rmarkdown/html-document.html#table-of-contents
 
@@ -28,10 +24,16 @@ rm(list = ls())
 library(dplyr)
 googlesheets4::gs4_deauth()
 
+for (i in list.files(here::here("R"), full.names = TRUE)) source(i)
+
 # set path to the behavioral data within your repository 
 link = "https://docs.google.com/spreadsheets/d/167rT3pKlFvfqzlXSNDd31ad4pZSzWwvz4mtAnq2I0z8/edit?gid=0#gid=0"
 
+dttm <- pretty_datetime(Sys.time())
+
 ```
+
+Last updated on `r dttm`
 
 <!-- # Read data from googledrive -->
 
