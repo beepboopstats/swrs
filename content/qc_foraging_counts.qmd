@@ -3,6 +3,8 @@ title: ""
 format: 
   html: 
     number-sections: true
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -94,6 +96,10 @@ sdat <- tdat |>
   ) |> 
   arrange(
     date, observer, col_id
+  ) |> 
+  tidyr::pivot_wider(
+    names_from = inout,
+    values_from = rate,
   )
 ```
 
@@ -103,15 +109,15 @@ sdat <- tdat |>
 
 The date of observation entered is an implausible date.
 
+> ASSUMPTION: Observation started on 14 Aug 2025.
+
 ```{r}
-foo <- sdat |> 
+foo <- sdat |>
+# sdat |>
+  # glimpse()
   filter(
-    date > Sys.Date() 
-  ) |> 
-  select(
-    date,
-    observer,
-    col_id
+    date > Sys.Date() |
+      date < lubridate::ymd("2025-08-14")
   )
 
 if(nrow(foo) > 0) {
@@ -148,16 +154,72 @@ Below, we list two types of colonies:
 
 :::
 
+# Vizualize data by colony
+
+```{r fig.width=12, fig.height=6}
+library(ggplot2)
+
+which_colonies <- sdat$col_id |> unique()
+rel_colonies <- as.integer(which_colonies) |> na.omit() |> sort()
+
+cat(
+  "Removing the following colonies from display: ", 
+  setdiff(which_colonies, rel_colonies) |> paste(collapse = ", ")
+)
+
+# split into 4 groups
+n_cols <- ceiling(length(rel_colonies) / 4)
+col_groups <- list(
+  rel_colonies[1:n_cols],
+  rel_colonies[(n_cols+1):(n_cols*2)],
+  rel_colonies[(2*n_cols+1):(n_cols*3)],
+  rel_colonies[(3*n_cols+1):length(rel_colonies)]
+)
+sdat |> 
+  transmute(
+    col_id,
+    date,
+    observer,
+    total_rate = `in` + out
+  ) |> 
+  filter(
+    col_id %in% rel_colonies
+  ) |> 
+  mutate(
+    col_group = case_when(
+      col_id %in% col_groups[[1]] ~ "Random set 1",
+      col_id %in% col_groups[[2]] ~ "Random set 2",
+      col_id %in% col_groups[[3]] ~ "Random set 3",
+      .default = "Random set 4"
+    ),
+    col_id = factor(col_id, levels = rev(rel_colonies))
+  ) |> 
+  ggplot(
+    aes(
+      x = as.factor(date),
+      y = col_id,
+      fill = total_rate
+    )
+  ) +
+  facet_wrap(~ col_group, scales = "free_y", ncol = 4) +
+  geom_tile(color = "black") +
+  theme_bw(15) +
+  viridis::scale_fill_viridis(direction = -1) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5),
+    axis.title.x = element_blank(),
+    panel.grid.major.y = element_blank()
+  )
+
+```
+
+
 # View summarized dataset
 
 > Grouped by date and observer, total in/out rates.
 
 ```{r}
 sdat |> 
-  tidyr::pivot_wider(
-    names_from = inout,
-    values_from = rate,
-  ) |> 
   reactable::reactable(
     groupBy = c("date", "observer"),
     sortable = TRUE,
