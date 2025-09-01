@@ -11,7 +11,7 @@
     "href": "qc_foraging_counts.html",
     "title": "1 Outstanding errors",
     "section": "",
-    "text": "Last updated on Sun, 31 Aug, 2025 | 17:19 PM"
+    "text": "Last updated on Sun, 31 Aug, 2025 | 17:25 PM"
   },
   {
     "objectID": "qc_foraging_counts.html#error-dates",
@@ -32,7 +32,7 @@
     "href": "qc_foraging_counts.html#table-missingness-in-data",
     "title": "1 Outstanding errors",
     "section": "2.2 Table: Missingness in data",
-    "text": "2.2 Table: Missingness in data\n\n\nRows: 742\nColumns: 6\nGroups: col_id, rate [169]\n$ col_id     &lt;fct&gt; 1685, 1685, 1685, 1685, 1685, 1685, 1685, 1676, 1676, 1676,…\n$ date       &lt;date&gt; 2025-08-14, 2025-08-15, 2025-08-18, 2025-08-20, 2025-08-22…\n$ observer   &lt;chr&gt; NA, NA, NA, NA, NA, \"SY\", \"SY\", \"JN\", \"JN\", \"MW\", \"JN\", \"JN…\n$ total_rate &lt;dbl&gt; NA, NA, NA, NA, NA, 7, 5, 0, 0, 0, 0, 0, 0, 0, 12, 7, 5, 4,…\n$ col_group  &lt;chr&gt; \"Random set 4\", \"Random set 4\", \"Random set 4\", \"Random set…\n$ rate       &lt;fct&gt; Missing, Missing, Missing, Missing, Missing, Yes, Yes, No, …\nRows: 106\nColumns: 4\n$ col_id           &lt;fct&gt; 181, 1131, 1166, 1186, 1231, 1252, 1338, 1342, 1352, …\n$ Foraging_Yes     &lt;int&gt; 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,…\n$ Foraging_No      &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…\n$ Foraging_Missing &lt;int&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, N…"
+    "text": "2.2 Table: Missingness in data"
   },
   {
     "objectID": "index.html",
