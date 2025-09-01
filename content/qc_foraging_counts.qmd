@@ -133,28 +133,11 @@ if(nrow(foo) > 0) {
 }
 ```
 
-## Error: Colony IDs
-
-Below, we list two types of colonies:
-
-1. __expected__ to count, but __missed__
-2. __NOT expected__ to count, but __counted__
+# Vizualize data by colony
 
 ::: {.callout-note collapse=true}
-## Expected, but missed
 
-> COMING SOON.
-
-:::
-
-::: {.callout-warning collapse=true}
-## NOT expected, but counted
-
-> COMING SOON.
-
-:::
-
-# Vizualize data by colony
+## Absolute total foraging rates by colony-date.
 
 ```{r fig.width=12, fig.height=6}
 library(ggplot2)
@@ -175,7 +158,7 @@ col_groups <- list(
   rel_colonies[(2*n_cols+1):(n_cols*3)],
   rel_colonies[(3*n_cols+1):length(rel_colonies)]
 )
-sdat |> 
+dat_plot <- sdat |> 
   transmute(
     col_id,
     date,
@@ -193,7 +176,9 @@ sdat |>
       .default = "Random set 4"
     ),
     col_id = factor(col_id, levels = rev(rel_colonies))
-  ) |> 
+  )
+
+dat_plot |> 
   ggplot(
     aes(
       x = as.factor(date),
@@ -213,6 +198,162 @@ sdat |>
 
 ```
 
+:::
+
+
+
+```{r}
+dat_plot_all <- dat_plot |>
+  tidyr::expand(
+    col_id, 
+    date
+  ) |>
+  left_join(
+    dat_plot
+  ) |> 
+  group_by(
+    col_id
+  ) |> 
+  tidyr::fill(
+    col_group, .direction = "downup"
+  ) |> 
+  ungroup() |> 
+  group_by(
+    col_id, date
+  ) |> 
+  reframe(
+    observer = max(observer, na.rm = TRUE),
+    total_rate = max(total_rate, na.rm = TRUE),
+    col_group = max(col_group, na.rm = TRUE)
+  ) |> 
+  mutate(
+    across(
+      everything(),
+      ~ if_else(
+        is.infinite(.x),
+        NA,
+        .x
+      )
+    )
+  ) |> 
+  mutate(
+    rate = case_when(
+      total_rate == 0 ~ "No",
+      total_rate > 0 ~ "Yes",
+      .default = "Missing"
+    ) |> 
+      factor(
+        levels = c(
+          "Yes",
+          "No",
+          "Missing"
+        )
+      )
+  )
+
+```
+
+
+
+## Plot: Missingness in data
+
+```{r fig.width=12, fig.height=6}
+dat_plot_all |> 
+  ggplot(
+    aes(
+      x = as.factor(date),
+      y = col_id,
+      fill = rate
+    )
+  ) +
+  facet_wrap(~ col_group, scales = "free_y", ncol = 4) +
+  geom_tile(color = "black") +
+  theme_bw(15) +
+  scale_fill_manual(
+    values = c("orange", "maroon", "white"),
+    "Foraging (in + out > 0) observed?"
+  ) +
+  # viridis::scale_fill_viridis(direction = -1) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5),
+    axis.title.x = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "top"
+  )
+```
+
+
+## Table: Missingness in data
+
+```{r}
+summ <- dat_plot_all |> 
+  group_by(col_id, rate) |> 
+  glimpse() |> 
+  reframe(
+    n_dates = n(),
+    which_dates = paste(
+      date,
+      collapse = ", "
+    )
+  ) |> 
+  arrange(
+    rate,
+    desc(n_dates),
+    desc(col_id)
+  ) |> 
+  select(
+    - which_dates
+  ) |> 
+  # glimpse()
+  tidyr::pivot_wider(
+    names_from = rate,
+    names_prefix = "Foraging_",
+    values_from = n_dates
+  ) |> 
+  glimpse()
+
+orange_pal <- function(x) rgb(colorRamp(c("#ffe4cc", "#ffb54d"))(x), maxColorValue = 255)
+
+summ |> 
+  mutate(
+    col_group = case_when(
+      Foraging_Yes == 7 ~ "Observed, Foraging, all 7 days",
+      Foraging_Yes >= 5 ~  "Observed, Foraging, 5 or 6 days",
+      Foraging_Yes >= 1 ~  "Observed, Foraging, at least one day",
+      Foraging_No == 7 ~  "Observed, Not foraging, all 7 days",
+      .default = "Observed, Not foraging, OTHERS"
+    ) |> 
+      factor(
+        levels = c(
+          "Observed, Foraging, all 7 days",
+          "Observed, Foraging, 5 or 6 days",
+          "Observed, Foraging, at least one day",
+          "Observed, Not foraging, all 7 days",
+          "Observed, Not foraging, OTHERS"
+        )
+      ),
+    .before = 1
+  ) |> 
+  arrange(
+    col_group,
+    desc(Foraging_Yes),
+    desc(Foraging_No)
+  ) |> 
+  reactable::reactable(
+    groupBy = c("col_group"),
+    sortable = TRUE,
+    filterable = TRUE,
+    resizable = TRUE,
+    height = 500,
+    columns = list(
+      col_group = reactable::colDef(minWidth = 230),
+      col_id = reactable::colDef(minWidth = 50)
+    )
+  )
+  
+```
+
+
 
 # View summarized dataset
 
@@ -221,7 +362,6 @@ sdat |>
 ```{r}
 sdat |> 
   reactable::reactable(
-    groupBy = c("date", "observer"),
     sortable = TRUE,
     filterable = TRUE,
     resizable = TRUE,
