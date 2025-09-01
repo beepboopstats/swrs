@@ -257,7 +257,7 @@ dat_plot_all <- dat_plot |>
 
 ## Plot: Missingness in data
 
-```{r fig.width=12, fig.height=6}
+```{r fig.width=12, fig.height=8}
 dat_plot_all |> 
   ggplot(
     aes(
@@ -287,8 +287,7 @@ dat_plot_all |>
 
 ```{r}
 summ <- dat_plot_all |> 
-  group_by(col_id, rate) |> 
-  glimpse() |> 
+  group_by(col_id, rate) |>
   reframe(
     n_dates = n(),
     which_dates = paste(
@@ -303,14 +302,12 @@ summ <- dat_plot_all |>
   ) |> 
   select(
     - which_dates
-  ) |> 
-  # glimpse()
+  ) |>
   tidyr::pivot_wider(
     names_from = rate,
     names_prefix = "Foraging_",
     values_from = n_dates
-  ) |> 
-  glimpse()
+  )
 
 orange_pal <- function(x) rgb(colorRamp(c("#ffe4cc", "#ffb54d"))(x), maxColorValue = 255)
 
