@@ -135,7 +135,7 @@ if(nrow(foo) > 0) {
 
 # Vizualize data by colony
 
-::: {.callout-note collapse=true}
+::: {.callout-note collapse=false}
 
 ## Absolute total foraging rates by colony-date.
 
