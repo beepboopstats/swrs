@@ -135,20 +135,23 @@ if(nrow(foo) > 0) {
 
 # Vizualize data by colony
 
+```{r}
+which_colonies <- sdat$col_id |> unique()
+rel_colonies <- as.integer(which_colonies) |> na.omit() |> sort()
+
+cat(
+  "Removing the following colonies from display: \n", 
+  setdiff(which_colonies, rel_colonies) |> paste(collapse = ", ")
+)
+```
+
+
 ::: {.callout-note collapse=false}
 
 ## Absolute total foraging rates by colony-date.
 
 ```{r fig.width=12, fig.height=6}
 library(ggplot2)
-
-which_colonies <- sdat$col_id |> unique()
-rel_colonies <- as.integer(which_colonies) |> na.omit() |> sort()
-
-cat(
-  "Removing the following colonies from display: ", 
-  setdiff(which_colonies, rel_colonies) |> paste(collapse = ", ")
-)
 
 # split into 4 groups
 n_cols <- ceiling(length(rel_colonies) / 4)
@@ -282,8 +285,13 @@ dat_plot_all |>
   )
 ```
 
-
 ## Table: Missingness in data
+
+> **You can interact with the table** \
+>   - **Sort**: click the name of the column \
+>   - **Filter**: search for a value in the boxes under the column name \
+>   - **Resize**: pull the column borders to resize column width \
+>   - **Expand**: Click the expand button to see data for a group \
 
 ```{r}
 summ <- dat_plot_all |> 
@@ -354,7 +362,10 @@ summ |>
 
 # View summarized dataset
 
-> Grouped by date and observer, total in/out rates.
+> **You can interact with the table** \
+>   - **Sort**: click the name of the column \
+>   - **Filter**: search for a value in the boxes under the column name \
+>   - **Resize**: pull the column borders to resize column width \
 
 ```{r}
 sdat |> 
